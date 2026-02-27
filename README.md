@@ -1,0 +1,1 @@
+# simigo-warranty-prototype
