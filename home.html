@@ -1,0 +1,2091 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SIMIGO - Hệ thống Bảo hành (Prototype)</title>
+  <style>
+    :root{
+      --primary:#EE4D2D;
+      --bg:#F6F7FB;
+      --card:#FFFFFF;
+      --text:#1F2937;
+      --muted:#6B7280;
+      --line:#E5E7EB;
+      --good:#10B981;
+      --warn:#F59E0B;
+      --bad:#EF4444;
+      --info:#3B82F6;
+      --radius:14px;
+      --shadow:0 10px 30px rgba(17,24,39,.08);
+      --shadow2:0 6px 20px rgba(17,24,39,.06);
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--font);
+      background:var(--bg);
+      color:var(--text);
+    }
+    a{color:inherit}
+    .hidden{display:none!important}
+    .container{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      min-height:100vh;
+    }
+    .sidebar{
+      background: #fff;
+      border-right:1px solid var(--line);
+      padding:18px 14px;
+      position:sticky;
+      top:0;
+      height:100vh;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 10px 18px 10px;
+      border-bottom:1px solid var(--line);
+      margin-bottom:14px;
+    }
+    .logo{
+      width:38px;height:38px;border-radius:12px;
+      background:var(--primary);
+      display:grid;place-items:center;
+      color:#fff;font-weight:800;
+      box-shadow: var(--shadow2);
+      user-select:none;
+    }
+    .brand h1{
+      font-size:16px;margin:0;letter-spacing:.4px;
+    }
+    .nav{
+      display:flex;flex-direction:column;gap:6px;
+      margin-top:10px;
+    }
+    .nav button{
+      border:1px solid transparent;
+      background:transparent;
+      text-align:left;
+      padding:10px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      color:var(--text);
+      display:flex;align-items:center;gap:10px;
+      font-size:14px;
+    }
+    .nav button:hover{background:#F9FAFB}
+    .nav button.active{
+      background: rgba(238,77,45,.08);
+      border-color: rgba(238,77,45,.25);
+      color: var(--primary);
+      font-weight:700;
+    }
+    .nav .section{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      padding:8px 10px 0;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .main{
+      padding:18px 18px 40px;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .topbar .crumb{
+      display:flex;align-items:center;gap:10px;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .pill{
+      padding:8px 10px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      display:flex;align-items:center;gap:8px;
+      box-shadow: var(--shadow2);
+    }
+    .pill b{font-size:13px}
+    .pill small{color:var(--muted)}
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      box-shadow:var(--shadow2);
+      font-weight:600;
+    }
+    .btn.primary{
+      border-color: rgba(238,77,45,.35);
+      background: var(--primary);
+      color:#fff;
+    }
+    .btn.ghost{
+      background:transparent;
+      border-color: transparent;
+      box-shadow:none;
+      color:var(--muted);
+    }
+    .grid{
+      display:grid;
+      gap:14px;
+    }
+    .grid.cols-2{grid-template-columns: 1fr 1fr;}
+    .grid.cols-3{grid-template-columns: 1fr 1fr 1fr;}
+    .grid.cols-4{grid-template-columns: 1fr 1fr 1fr 1fr;}
+    @media(max-width: 1100px){
+      .container{grid-template-columns: 1fr}
+      .sidebar{position:relative;height:auto}
+      .grid.cols-4{grid-template-columns: 1fr 1fr;}
+      .grid.cols-3{grid-template-columns: 1fr;}
+      .grid.cols-2{grid-template-columns: 1fr;}
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+      padding:14px;
+    }
+    .card h2{
+      margin:0 0 10px;
+      font-size:16px;
+      letter-spacing:.2px;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:-6px;
+      margin-bottom:12px;
+    }
+    .row{
+      display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+    }
+    .field{
+      display:flex;flex-direction:column;gap:6px;
+      min-width:220px;flex:1;
+    }
+    label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+    input, select, textarea{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      outline:none;
+      font-size:14px;
+      background:#fff;
+    }
+    textarea{min-height:92px;resize:vertical}
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(238,77,45,.5);
+      box-shadow: 0 0 0 4px rgba(238,77,45,.08);
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-weight:800;
+      letter-spacing:.02em;
+    }
+    .badge.orange{background: rgba(238,77,45,.10); border-color: rgba(238,77,45,.25); color: var(--primary);}
+    .badge.green{background: rgba(16,185,129,.10); border-color: rgba(16,185,129,.25); color: var(--good);}
+    .badge.yellow{background: rgba(245,158,11,.10); border-color: rgba(245,158,11,.25); color: var(--warn);}
+    .badge.red{background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.25); color: var(--bad);}
+    .badge.blue{background: rgba(59,130,246,.10); border-color: rgba(59,130,246,.25); color: var(--info);}
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+    }
+    thead th{
+      text-align:left;
+      font-size:12px;
+      color:var(--muted);
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      background:#FAFAFB;
+    }
+    tbody td{
+      padding:11px 12px;
+      border-bottom:1px solid var(--line);
+      vertical-align:top;
+      font-size:14px;
+    }
+    tbody tr:hover{background:#FAFAFB}
+    tbody tr:last-child td{border-bottom:none}
+    .actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .kpi{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .kpi .value{
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .kpi .hint{color:var(--muted);font-size:12px;margin-top:4px}
+    .kpi .icon{
+      width:36px;height:36px;border-radius:12px;
+      background: rgba(238,77,45,.10);
+      border:1px solid rgba(238,77,45,.25);
+      display:grid;place-items:center;
+      color:var(--primary);
+      font-weight:900;
+      user-select:none;
+    }
+    .split{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+    }
+    @media(max-width:1100px){.split{grid-template-columns:1fr}}
+    .timeline{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:10px;
+    }
+    .titem{
+      display:grid;
+      grid-template-columns: 10px 1fr;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      background: var(--primary);
+      margin-top:4px;
+    }
+    .tbox{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+    }
+    .tbox .meta{
+      display:flex;gap:10px;flex-wrap:wrap;
+      font-size:12px;color:var(--muted);
+      margin-top:6px;
+    }
+    .notice{
+      border:1px dashed rgba(238,77,45,.45);
+      background: rgba(238,77,45,.06);
+      padding:10px 12px;
+      border-radius:14px;
+      color: #7C2D12;
+      font-size:13px;
+    }
+
+    /* Login */
+    .loginWrap{
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:18px;
+      background: radial-gradient(1200px 500px at 30% 0%, rgba(238,77,45,.12), transparent 60%),
+                  radial-gradient(900px 500px at 90% 20%, rgba(59,130,246,.12), transparent 60%),
+                  var(--bg);
+    }
+    .loginCard{
+      width:min(920px, 98vw);
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:14px;
+    }
+    @media(max-width: 980px){.loginCard{grid-template-columns:1fr}}
+    .hero{
+      padding:20px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:#fff;
+      box-shadow:var(--shadow);
+    }
+    .hero h1{margin:0;font-size:24px}
+    .hero p{color:var(--muted);margin:10px 0 0;line-height:1.5}
+    .formCard{
+      padding:20px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:#fff;
+      box-shadow:var(--shadow);
+    }
+    .formCard h2{margin:0 0 10px}
+    .footerNote{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:10px;
+    }
+    .divider{
+      border-top:1px solid var(--line);
+      margin:12px 0;
+    }
+    .chip{
+      display:inline-flex;align-items:center;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;color:var(--muted);
+      background:#fff;
+      margin-right:6px;
+      margin-top:6px;
+    }
+
+    canvas{width:100%; height:240px; border:1px solid var(--line); border-radius:14px; background:#fff;}
+    .small{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+
+<body>
+  <!-- LOGIN -->
+  <section id="view-login" class="loginWrap">
+    <div class="loginCard">
+      <div class="hero">
+        <div class="brand" style="border:none;margin:0;padding:0 0 10px 0;">
+          <div class="logo">S</div>
+          <div>
+            <H1 align="center">DEMO hệ thống</H1>
+            <h1>SIMIGO • Hệ thống Bảo hành-Được lên kế hoạch và làm bởi LTN</h1>
+          </div>
+        </div>
+        <p>
+          Mục tiêu: quản lý bảo hành chặt chẽ, có timeline đầy đủ và thống kê lỗi theo <b>loại lỗi</b>, <b>tên sản phẩm</b>,
+          <b>mã đơn</b>, <b>ngày mua</b>, theo mốc <b>6 tháng / 1 năm</b>.
+        </p>
+        <div class="divider"></div>
+        <div>
+          <span class="chip">Role: CUSTOMER</span>
+          <span class="chip">Role: ADMIN / KỸ THUẬT</span>
+          <span class="chip">State Machine</span>
+          <span class="chip">Dashboard Thống kê</span>
+        </div>
+        <div class="footerNote">* Bạn có thể login demo: <b>admin</b> hoặc <b>customer</b> (mật khẩu bất kỳ).</div>
+      </div>
+
+      <div class="formCard">
+        <h2>Đăng nhập</h2>
+        <div class="sub">Chọn role để xem đúng giao diện (demo).</div>
+        <div class="grid">
+          <div class="field">
+            <label>Tài khoản</label>
+            <input id="login-username" placeholder="admin hoặc customer" />
+          </div>
+          <div class="field">
+            <label>Mật khẩu</label>
+            <input id="login-password" type="password" placeholder="Nhập mật khẩu (demo)" />
+          </div>
+          <div class="row" style="justify-content:space-between;">
+            <button class="btn ghost" type="button" id="login-fill-admin">Điền nhanh Admin</button>
+            <button class="btn ghost" type="button" id="login-fill-customer">Điền nhanh Customer</button>
+          </div>
+          <button class="btn primary" id="btn-login">Đăng nhập</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <section id="view-app" class="hidden">
+    <div class="container">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo">S</div>
+          <div>
+            <h1>SIMIGO</h1>
+            <div class="small" id="role-label">Role</div>
+          </div>
+        </div>
+
+        <div class="nav">
+          <div class="section">Customer</div>
+          <button data-page="c-create" id="nav-c-create">Tạo Bảo Hành</button>
+          <button data-page="c-list" id="nav-c-list">Yêu Cầu Của Tôi</button>
+          <button data-page="c-detail" id="nav-c-detail" class="hidden">Chi tiết (Customer)</button>
+
+          <div class="section">Admin</div>
+          <button data-page="a-dashboard" id="nav-a-dashboard">Dashboard</button>
+          <button data-page="a-list" id="nav-a-list">Danh Sách Bảo Hành</button>
+          <button data-page="a-detail" id="nav-a-detail" class="hidden">Chi tiết (Admin)</button>
+
+          <div class="section">Hệ thống</div>
+          <button id="btn-logout">Đăng Xuất</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div class="crumb" id="crumb">Trang</div>
+          <div class="row">
+            <div class="pill">
+              <b id="user-name">Người dùng</b>
+              <small id="user-role">ROLE</small>
+            </div>
+            <button class="btn" id="btn-seed">Tạo dữ liệu mẫu</button>
+          </div>
+        </div>
+
+        <!-- CUSTOMER CREATE -->
+        <section id="page-c-create" class="page hidden">
+          <div class="card">
+            <h2>Tạo yêu cầu bảo hành</h2>
+            <div class="sub">Khách hàng nhập thông tin — lỗi sẽ được Kỹ thuật phân loại lại để thống kê chính xác.</div>
+
+            <div class="grid cols-2">
+              <div class="card">
+                <h2>Thông tin đơn hàng</h2>
+                <div class="grid">
+                  <div class="field">
+                    <label>Mã đơn Shopee (order_code)</label>
+                    <input id="c_order_code" placeholder="Ví dụ: 24041603765N1BF8" />
+                  </div>
+                  <div class="field">
+                    <label>Tên sản phẩm</label>
+                    <input id="c_product_name" placeholder="Ví dụ: Máy hút bụi cầm tay X1" />
+                  </div>
+                  <div class="row">
+                    <div class="field">
+                      <label>Serial (nếu có)</label>
+                      <input id="c_serial" placeholder="Ví dụ: X1-2024-0001" />
+                    </div>
+                    <div class="field">
+                      <label>Ngày mua</label>
+                      <input id="c_purchase_date" type="date" />
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Số điện thoại</label>
+                    <input id="c_phone" placeholder="Ví dụ: 0912345678" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h2>Mô tả lỗi (khách hàng)</h2>
+                <div class="sub">Khách mô tả tự do. Kỹ thuật sẽ phân loại lỗi để lọc & thống kê.</div>
+                <div class="grid">
+                  <div class="field">
+                    <label>Mô tả lỗi</label>
+                    <textarea id="c_error_desc" placeholder="Ví dụ: Máy không lên nguồn, đã sạc nhưng không hoạt động..."></textarea>
+                  </div>
+
+                  <div class="row">
+                    <div class="field">
+                      <label>Hình thức gửi bảo hành</label>
+                      <select id="c_return_method">
+                        <option value="SHIP">Ship</option>
+                        <option value="DIRECT">Trực tiếp</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label>Đơn vị vận chuyển</label>
+                      <select id="c_carrier">
+                        <option value="">-- Chọn --</option>
+                        <option value="GHN">GHN</option>
+                        <option value="GHTK">GHTK</option>
+                        <option value="ViettelPost">ViettelPost</option>
+                        <option value="Khác">Khác</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label>Mã vận đơn</label>
+                    <input id="c_tracking" placeholder="Ví dụ: GHN123456789" />
+                  </div>
+
+                  <div class="row" style="justify-content:flex-end;">
+                    <button class="btn primary" id="btn-c-submit">Gửi yêu cầu</button>
+                  </div>
+                  <div class="notice">
+                    Trạng thái ban đầu: <b>CREATED</b>. Sau khi Shop xác nhận thông tin → <b>WAITING_FOR_RECEIVE</b>.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CUSTOMER LIST -->
+        <section id="page-c-list" class="page hidden">
+          <div class="card">
+            <h2>Danh sách yêu cầu của tôi</h2>
+            <div class="sub">Bạn có thể lọc theo trạng thái & thời gian tạo.</div>
+
+            <div class="row" style="margin-bottom:12px;">
+              <div class="field" style="max-width:260px;">
+                <label>Trạng thái</label>
+                <select id="c_filter_status">
+                  <option value="">Tất cả</option>
+                </select>
+              </div>
+              <div class="field" style="max-width:220px;">
+                <label>Từ ngày</label>
+                <input type="date" id="c_filter_from" />
+              </div>
+              <div class="field" style="max-width:220px;">
+                <label>Đến ngày</label>
+                <input type="date" id="c_filter_to" />
+              </div>
+              <button class="btn" id="btn-c-filter">Lọc</button>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã yêu cầu</th>
+                  <th>Mã đơn</th>
+                  <th>Sản phẩm</th>
+                  <th>Ngày tạo</th>
+                  <th>Trạng thái</th>
+                  <th style="text-align:right;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="c_table"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- CUSTOMER DETAIL -->
+        <section id="page-c-detail" class="page hidden">
+          <div class="split">
+            <div class="card">
+              <div class="row" style="justify-content:space-between;">
+                <div>
+                  <h2>Chi tiết yêu cầu (Customer)</h2>
+                  <div class="sub" id="c_detail_code">—</div>
+                </div>
+                <button class="btn" id="btn-c-back">Quay lại</button>
+              </div>
+
+              <div class="grid cols-2">
+                <div class="card">
+                  <h2>Thông tin yêu cầu</h2>
+                  <div id="c_detail_info"></div>
+                </div>
+                <div class="card">
+                  <h2>Trạng thái hiện tại</h2>
+                  <div id="c_detail_status"></div>
+                  <div class="divider"></div>
+                  <div class="field">
+                    <label>Cập nhật mã vận đơn (chỉ trước khi Shop nhận hàng)</label>
+                    <input id="c_detail_tracking" placeholder="Nhập mã vận đơn" />
+                  </div>
+                  <div class="row" style="justify-content:flex-end;">
+                    <button class="btn" id="btn-c-update-tracking">Cập nhật</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card" style="margin-top:14px;">
+                <h2>Timeline xử lý</h2>
+                <div class="timeline" id="c_detail_timeline"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>Gợi ý</h2>
+              <div class="sub">Để thống kê lỗi chính xác, kỹ thuật sẽ phân loại lỗi (category/severity/cause).</div>
+              <div class="notice">
+                Khi có nhiều dữ liệu, Dashboard sẽ thống kê:
+                <ul style="margin:8px 0 0 18px;color:#7C2D12">
+                  <li>Sản phẩm lỗi nhiều theo 6 tháng / 1 năm</li>
+                  <li>Loại lỗi thường gặp</li>
+                  <li>Thời gian xử lý trung bình</li>
+                  <li>Đối chiếu ngày mua & chính sách bảo hành</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ADMIN DASHBOARD -->
+        <section id="page-a-dashboard" class="page hidden">
+          <div class="grid cols-4">
+            <div class="card kpi">
+              <div>
+                <div class="small">Tổng yêu cầu</div>
+                <div class="value" id="kpi_total">0</div>
+                <div class="hint">Trong bộ lọc hiện tại</div>
+              </div>
+              <div class="icon">Σ</div>
+            </div>
+            <div class="card kpi">
+              <div>
+                <div class="small">Đang xử lý</div>
+                <div class="value" id="kpi_inprogress">0</div>
+                <div class="hint">Không tính COMPLETED/REJECTED</div>
+              </div>
+              <div class="icon">↻</div>
+            </div>
+            <div class="card kpi">
+              <div>
+                <div class="small">Hoàn tất</div>
+                <div class="value" id="kpi_done">0</div>
+                <div class="hint">COMPLETED</div>
+              </div>
+              <div class="icon">✓</div>
+            </div>
+            <div class="card kpi">
+              <div>
+                <div class="small">Thời gian xử lý TB</div>
+                <div class="value" id="kpi_avg_days">0</div>
+                <div class="hint">Ngày (ước tính)</div>
+              </div>
+              <div class="icon">⏱</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h2>Bộ lọc thống kê</h2>
+            <div class="sub">Lọc theo lỗi / sản phẩm / mã đơn / ngày mua / trạng thái / thời gian.</div>
+
+            <div class="grid cols-3">
+              <div class="field">
+                <label>Từ ngày (Ngày tạo)</label>
+                <input type="date" id="d_from" />
+              </div>
+              <div class="field">
+                <label>Đến ngày (Ngày tạo)</label>
+                <input type="date" id="d_to" />
+              </div>
+              <div class="field">
+                <label>Trạng thái</label>
+                <select id="d_status"></select>
+              </div>
+              <div class="field">
+                <label>Loại lỗi (kỹ thuật phân loại)</label>
+                <select id="d_error_category"></select>
+              </div>
+              <div class="field">
+                <label>Tên sản phẩm</label>
+                <select id="d_product"></select>
+              </div>
+              <div class="field">
+                <label>Mã đơn Shopee</label>
+                <input id="d_order_code" placeholder="Nhập mã đơn để lọc" />
+              </div>
+              <div class="field">
+                <label>Từ ngày mua</label>
+                <input type="date" id="d_purchase_from" />
+              </div>
+              <div class="field">
+                <label>Đến ngày mua</label>
+                <input type="date" id="d_purchase_to" />
+              </div>
+              <div class="row" style="align-items:end; justify-content:flex-end;">
+                <button class="btn" id="btn-d-apply">Áp dụng</button>
+                <button class="btn" id="btn-d-reset">Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid cols-2" style="margin-top:14px;">
+            <div class="card">
+              <h2>Biểu đồ cột: Số lỗi theo sản phẩm</h2>
+              <canvas id="chart_bar" width="800" height="240"></canvas>
+              <div class="small">* Dữ liệu dựa trên phân loại lỗi của kỹ thuật.</div>
+            </div>
+            <div class="card">
+              <h2>Biểu đồ tròn: Tỷ lệ loại lỗi</h2>
+              <canvas id="chart_pie" width="800" height="240"></canvas>
+              <div class="small">* Nhóm lỗi giúp lọc nhanh & thống kê 6 tháng / 1 năm.</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:14px;">
+            <h2>Bảng thống kê chi tiết</h2>
+            <div class="sub">Nhóm theo <b>Tên sản phẩm</b> + <b>Loại lỗi</b> + số lần + tỷ lệ + xử lý TB.</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Tên sản phẩm</th>
+                  <th>Loại lỗi</th>
+                  <th>Số lần lỗi</th>
+                  <th>Tỷ lệ (%)</th>
+                  <th>Thời gian xử lý TB (ngày)</th>
+                </tr>
+              </thead>
+              <tbody id="d_table"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ADMIN LIST -->
+        <section id="page-a-list" class="page hidden">
+          <div class="card">
+            <h2>Danh sách bảo hành (Admin)</h2>
+            <div class="sub">Tìm kiếm theo mã đơn, SĐT, trạng thái, ngày tạo, ngày mua, loại lỗi, sản phẩm.</div>
+
+            <div class="grid cols-3" style="margin-bottom:12px;">
+              <div class="field">
+                <label>Mã đơn / Mã yêu cầu</label>
+                <input id="a_q" placeholder="Nhập mã đơn hoặc mã yêu cầu" />
+              </div>
+              <div class="field">
+                <label>Số điện thoại</label>
+                <input id="a_phone" placeholder="Ví dụ: 0912345678" />
+              </div>
+              <div class="field">
+                <label>Trạng thái</label>
+                <select id="a_status"></select>
+              </div>
+
+              <div class="field">
+                <label>Loại lỗi (kỹ thuật)</label>
+                <select id="a_error_category"></select>
+              </div>
+              <div class="field">
+                <label>Tên sản phẩm</label>
+                <select id="a_product"></select>
+              </div>
+              <div class="row" style="align-items:end; justify-content:flex-end;">
+                <button class="btn" id="btn-a-search">Tìm</button>
+                <button class="btn" id="btn-a-clear">Xóa lọc</button>
+              </div>
+
+              <div class="field">
+                <label>Từ ngày tạo</label>
+                <input type="date" id="a_from" />
+              </div>
+              <div class="field">
+                <label>Đến ngày tạo</label>
+                <input type="date" id="a_to" />
+              </div>
+              <div class="field">
+                <label>Khoảng ngày mua</label>
+                <div class="row">
+                  <input type="date" id="a_purchase_from" style="flex:1;min-width:0" />
+                  <input type="date" id="a_purchase_to" style="flex:1;min-width:0" />
+                </div>
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Mã yêu cầu</th>
+                  <th>Mã đơn</th>
+                  <th>Khách hàng</th>
+                  <th>Sản phẩm</th>
+                  <th>Ngày mua</th>
+                  <th>Trạng thái</th>
+                  <th>Loại lỗi (KT)</th>
+                  <th style="text-align:right;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="a_table"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ADMIN DETAIL -->
+        <section id="page-a-detail" class="page hidden">
+          <div class="split">
+            <div class="card">
+              <div class="row" style="justify-content:space-between;">
+                <div>
+                  <h2>Chi tiết yêu cầu (Admin / Kỹ thuật)</h2>
+                  <div class="sub" id="a_detail_code">—</div>
+                </div>
+                <div class="row">
+                  <button class="btn" id="btn-a-back">Quay lại</button>
+                </div>
+              </div>
+
+              <div class="grid cols-2">
+                <div class="card">
+                  <h2>Thông tin yêu cầu</h2>
+                  <div id="a_detail_info"></div>
+                </div>
+                <div class="card">
+                  <h2>Trạng thái & xác minh</h2>
+                  <div id="a_detail_status"></div>
+                  <div class="divider"></div>
+
+                  <div class="row">
+                    <button class="btn" id="btn-verify-ok">Xác minh hợp lệ</button>
+                    <button class="btn" id="btn-verify-no">Từ chối (không hợp lệ)</button>
+                  </div>
+
+                  <div class="divider"></div>
+                  <div class="field">
+                    <label>Ghi chú nội bộ</label>
+                    <textarea id="a_internal_note" placeholder="Ghi chú nội bộ cho kỹ thuật / vận hành..."></textarea>
+                  </div>
+                  <div class="row" style="justify-content:flex-end;">
+                    <button class="btn" id="btn-add-note">Lưu ghi chú</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card" style="margin-top:14px;">
+                <h2>Lịch sử xử lý (Timeline)</h2>
+                <div class="timeline" id="a_detail_timeline"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>Phân loại lỗi (kỹ thuật) & cập nhật trạng thái</h2>
+              <div class="sub">Phần này giúp lọc & thống kê chính xác theo 6 tháng / 1 năm.</div>
+
+              <div class="grid">
+                <div class="field">
+                  <label>Loại lỗi (Error Category)</label>
+                  <select id="a_err_cat"></select>
+                </div>
+                <div class="row">
+                  <div class="field">
+                    <label>Mức độ lỗi</label>
+                    <select id="a_err_sev">
+                      <option value="NHẸ">Nhẹ</option>
+                      <option value="TRUNG_BÌNH">Trung bình</option>
+                      <option value="NẶNG">Nặng</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Nguyên nhân</label>
+                    <select id="a_err_cause">
+                      <option value="DO_SẢN_XUẤT">Do sản xuất</option>
+                      <option value="DO_NGƯỜI_DÙNG">Do người dùng</option>
+                      <option value="KHÁC">Khác</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label>Ghi chú kỹ thuật</label>
+                  <textarea id="a_tech_note" placeholder="Mô tả kiểm tra, kết luận, hướng xử lý..."></textarea>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field">
+                  <label>Chuyển trạng thái (theo đúng logic)</label>
+                  <select id="a_next_status"></select>
+                </div>
+
+                <div class="row" style="justify-content:flex-end;">
+                  <button class="btn primary" id="btn-transition">Cập nhật trạng thái</button>
+                </div>
+
+                <div class="notice" id="transition_hint">
+                  Hệ thống sẽ chặn nhảy trạng thái sai logic (State Machine/Rule Map).
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </section>
+
+<script>
+/** =========================
+ *  Mock data + State machine
+ *  ========================= */
+
+const WarrantyStatus = [
+  "CREATED",
+  "WAITING_FOR_RECEIVE",
+  "RECEIVED",
+  "CHECKING",
+  "APPROVED",
+  "REJECTED",
+  "REPAIRING",
+  "DONE",
+  "SHIPPING_BACK",
+  "COMPLETED"
+];
+
+const StatusLabelVI = {
+  CREATED: "CREATED",
+  WAITING_FOR_RECEIVE: "WAITING_FOR_RECEIVE",
+  RECEIVED: "RECEIVED",
+  CHECKING: "CHECKING",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+  REPAIRING: "REPAIRING",
+  DONE: "DONE",
+  SHIPPING_BACK: "SHIPPING_BACK",
+  COMPLETED: "COMPLETED"
+};
+
+const StatusBadgeClass = {
+  CREATED: "blue",
+  WAITING_FOR_RECEIVE: "orange",
+  RECEIVED: "blue",
+  CHECKING: "yellow",
+  APPROVED: "green",
+  REJECTED: "red",
+  REPAIRING: "yellow",
+  DONE: "green",
+  SHIPPING_BACK: "orange",
+  COMPLETED: "green"
+};
+
+// Rule map: trạng thái hợp lệ (không nhảy sai)
+const AllowedTransitions = {
+  CREATED: ["WAITING_FOR_RECEIVE"],
+  WAITING_FOR_RECEIVE: ["RECEIVED"],
+  RECEIVED: ["CHECKING"],
+  CHECKING: ["APPROVED", "REJECTED"],
+  APPROVED: ["REPAIRING", "DONE"],
+  REJECTED: [],
+  REPAIRING: ["DONE"],
+  DONE: ["SHIPPING_BACK", "COMPLETED"],
+  SHIPPING_BACK: ["COMPLETED"],
+  COMPLETED: []
+};
+
+// Loại lỗi (kỹ thuật)
+const ErrorCategories = [
+  "Không hoạt động",
+  "Hút yếu",
+  "Không sạc",
+  "Lỗi pin",
+  "Tiếng ồn lớn",
+  "Rung lắc bất thường",
+  "Mùi khét",
+  "Khác"
+];
+
+let session = {
+  loggedIn: false,
+  role: null, // "ADMIN" | "CUSTOMER"
+  username: null,
+  userId: null
+};
+
+let db = {
+  warranties: [],
+  logs: []
+};
+
+let currentCustomerWarrantyId = null;
+let currentAdminWarrantyId = null;
+
+/** =========================
+ *  Helpers
+ *  ========================= */
+const $ = (id) => document.getElementById(id);
+
+function nowISO(){
+  const d = new Date();
+  return d.toISOString();
+}
+function fmtDate(iso){
+  const d = new Date(iso);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mi = String(d.getMinutes()).padStart(2,"0");
+  return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+}
+function fmtDateOnly(ymd){
+  if(!ymd) return "—";
+  const [y,m,d] = ymd.split("-");
+  return `${d}/${m}/${y}`;
+}
+function daysBetween(isoStart, isoEnd){
+  const a = new Date(isoStart).getTime();
+  const b = new Date(isoEnd).getTime();
+  return Math.max(0, Math.round((b-a) / (1000*60*60*24)));
+}
+
+function makeBadge(status){
+  const cls = StatusBadgeClass[status] || "blue";
+  return `<span class="badge ${cls}">${StatusLabelVI[status] || status}</span>`;
+}
+
+function genRequestCode(){
+  // demo: WR-YYYY-000001
+  const y = new Date().getFullYear();
+  const seq = String(db.warranties.length + 1).padStart(6,"0");
+  return `WR-${y}-${seq}`;
+}
+
+function addLog(warrantyId, action, oldStatus, newStatus, note, metadata){
+  db.logs.push({
+    id: crypto.randomUUID(),
+    warrantyId,
+    action,
+    oldStatus: oldStatus || null,
+    newStatus: newStatus || null,
+    note: note || "",
+    metadata: metadata || null,
+    changedBy: session.username || "system",
+    changedAt: nowISO()
+  });
+}
+
+function getWarrantyLogs(warrantyId){
+  return db.logs
+    .filter(l => l.warrantyId === warrantyId)
+    .sort((a,b) => new Date(b.changedAt)-new Date(a.changedAt));
+}
+
+function setActiveNav(pageId){
+  document.querySelectorAll(".nav button[data-page]").forEach(b=>{
+    b.classList.toggle("active", b.dataset.page === pageId);
+  });
+}
+
+function showPage(pageId){
+  document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+  $("page-"+pageId).classList.remove("hidden");
+  setActiveNav(pageId);
+  $("crumb").textContent = pageTitle(pageId);
+}
+
+function pageTitle(pageId){
+  const map = {
+    "c-create":"Customer • Tạo Bảo Hành",
+    "c-list":"Customer • Yêu Cầu Của Tôi",
+    "c-detail":"Customer • Chi tiết yêu cầu",
+    "a-dashboard":"Admin • Dashboard",
+    "a-list":"Admin • Danh Sách Bảo Hành",
+    "a-detail":"Admin • Chi tiết yêu cầu"
+  };
+  return map[pageId] || "Trang";
+}
+
+function requireRole(role){
+  if(session.role !== role){
+    alert("Bạn không có quyền truy cập trang này (demo).");
+    return false;
+  }
+  return true;
+}
+
+function updateRoleUI(){
+  // menu visibility by role
+  const isAdmin = session.role === "ADMIN";
+  const isCustomer = session.role === "CUSTOMER";
+
+  $("nav-c-create").classList.toggle("hidden", !isCustomer);
+  $("nav-c-list").classList.toggle("hidden", !isCustomer);
+
+  $("nav-a-dashboard").classList.toggle("hidden", !isAdmin);
+  $("nav-a-list").classList.toggle("hidden", !isAdmin);
+
+  $("role-label").textContent = isAdmin ? "ADMIN / KỸ THUẬT" : "CUSTOMER";
+}
+
+function fillSelectOptions(selectId, options, includeAllLabel){
+  const el = $(selectId);
+  el.innerHTML = "";
+  if(includeAllLabel){
+    const o = document.createElement("option");
+    o.value = "";
+    o.textContent = includeAllLabel;
+    el.appendChild(o);
+  }
+  options.forEach(v=>{
+    const o = document.createElement("option");
+    o.value = v;
+    o.textContent = v;
+    el.appendChild(o);
+  });
+}
+
+function uniqueProducts(){
+  const set = new Set(db.warranties.map(w=>w.productName));
+  return Array.from(set).sort();
+}
+
+/** =========================
+ *  Seed mock data
+ *  ========================= */
+function seedData(){
+  const customerName = "customer";
+  const adminName = "admin";
+
+  // clear then seed
+  db.warranties = [];
+  db.logs = [];
+
+  // ====== Danh sách sản phẩm bạn đưa ======
+  const products = [
+    "Cây lau nhà UNIQ LazyMop M1 G",
+    "Cây lau nhà UNIQ LazyMop M1 S",
+    "Cây lau nhà UNIQ LazyMop M1 X",
+    "Bóng sấy quần áo UNIQ Sunny trắng",
+    "Đèn học để bàn UNIQ Solar E07",
+    "Máy hút bụi cầm tay không dây UNIQ Free A07",
+    "Máy hút bụi cầm tay không dây UNIQ Free A09 Pro S",
+    "Máy hút bụi cầm tay không dây UNIQ Free A09 Pro",
+    "Máy hút bụi cầm tay không dây UNIQ Falcon Q05",
+    "Máy hút chân không UNIQ Joice M06 Trắng",
+    "Máy hút chân không UNIQ Joice M06 Xanh",
+    "Cân sức khỏe điện tử CRENOT Gofit S02 Trắng",
+    "Cân sức khỏe điện tử CRENOT Gofit S02 Đen",
+    "Cân sức khỏe điện tử CRENOT I8 Đen",
+    "Cân sức khỏe điện tử CRENOT I8 Trắng",
+    "Cân sức khỏe điện tử CRENOT Gofit X06 Pro",
+    "Máy triệt lông CRENOT Graci X03",
+    "Thiết bị vệ sinh khoang miệng UNIQ Sonic S03",
+    "Thiết bị vệ sinh khoang miệng UNIQ Sonic F04",
+    "Đèn học để bàn UNIQ Solar S09"
+  ];
+
+  // ====== Lỗi kỹ thuật để thống kê ======
+  const errorCats = [
+    "Không hoạt động",
+    "Hút yếu",
+    "Không sạc",
+    "Lỗi pin",
+    "Tiếng ồn lớn",
+    "Rung lắc bất thường",
+    "Mùi khét",
+    "Khác"
+  ];
+
+  const severities = ["NHẸ","TRUNG_BÌNH","NẶNG"];
+  const causes = ["DO_SẢN_XUẤT","DO_NGƯỜI_DÙNG","KHÁC"];
+
+  const carriers = ["GHN","GHTK","ViettelPost"];
+  const statusPool = [
+    "CREATED","WAITING_FOR_RECEIVE","RECEIVED","CHECKING",
+    "APPROVED","REPAIRING","DONE","SHIPPING_BACK","COMPLETED","REJECTED"
+  ];
+
+  function rand(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function pick(arr){ return arr[rand(0, arr.length-1)]; }
+
+  // yyyy-mm-dd
+  function toYMD(d){
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function genOrderCode(){
+    // giống format shopee giả lập: 24 + 11 số + 4 chữ
+    const num = String(rand(10000000000, 99999999999));
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const suffix = letters[rand(0,25)] + letters[rand(0,25)] + letters[rand(0,25)] + letters[rand(0,25)];
+    return `24${num}${suffix}`;
+  }
+
+  function genPhone(){
+    return "09" + String(rand(10000000, 99999999));
+  }
+
+  function genSerial(productName){
+    if(Math.random() < 0.35) return ""; // 35% không có serial
+    const code = productName
+            .split(" ")
+            .slice(0,3)
+            .join("-")
+            .toUpperCase()
+            .replaceAll("Đ","D");
+    return `${code}-${rand(1000,9999)}`;
+  }
+
+  function randomCreatedAtISO(){
+    // random trong 360 ngày gần nhất
+    const d = new Date();
+    d.setDate(d.getDate() - rand(1, 360));
+    d.setHours(rand(8, 20), rand(0, 59), 0, 0);
+    return d.toISOString();
+  }
+
+  function purchaseDateFromCreated(createdISO){
+    const created = new Date(createdISO);
+    const p = new Date(created);
+    p.setDate(p.getDate() - rand(0, 120)); // mua trước 0-120 ngày
+    return toYMD(p);
+  }
+
+  function shippingInfo(){
+    const returnMethod = Math.random() > 0.4 ? "SHIP" : "DIRECT";
+    if(returnMethod === "DIRECT"){
+      return { returnMethod, shippingCarrier:"", trackingCode:"" };
+    }
+    const shippingCarrier = pick(carriers);
+    const trackingCode = shippingCarrier + String(rand(100000000, 999999999));
+    return { returnMethod, shippingCarrier, trackingCode };
+  }
+
+  function makeCustomerDesc(cat){
+    const samples = [
+      `Khách mô tả: ${cat.toLowerCase()} — cần kiểm tra thêm.`,
+      `Sản phẩm gặp lỗi: ${cat.toLowerCase()} khi sử dụng.`,
+      `Sau vài lần dùng thì xuất hiện lỗi: ${cat.toLowerCase()}.`,
+      `Tình trạng: ${cat.toLowerCase()}, mong shop hỗ trợ bảo hành.`
+    ];
+    return pick(samples);
+  }
+
+  // ====== Tạo N record để dashboard đủ dữ liệu ======
+  const N = 36; // bạn có thể tăng 60/100 nếu muốn
+
+  const samples = Array.from({length:N}).map(() => {
+    const productName = pick(products);
+    const cat = pick(errorCats);
+    const sev = pick(severities);
+    const cause = pick(causes);
+    const createdAt = randomCreatedAtISO();
+    const purchaseDate = purchaseDateFromCreated(createdAt);
+    const ship = shippingInfo();
+    const status = pick(statusPool);
+
+    return {
+      orderCode: genOrderCode(),
+      productName,
+      serialNumber: genSerial(productName),
+      purchaseDate,
+      phone: genPhone(),
+      ...ship,
+      customerErrorDesc: makeCustomerDesc(cat),
+      tech: {
+        cat,
+        sev,
+        cause,
+        note: `Kỹ thuật ghi chú: Phân loại lỗi "${cat}", mức độ "${sev}", nguyên nhân "${cause}".`
+      },
+      status,
+      createdAt
+    };
+  });
+
+  // ====== Push vào db + log ======
+  samples.forEach((s) => {
+    const id = crypto.randomUUID();
+    const reqCode = genRequestCode();
+
+    const w = {
+      id,
+      shopId: "SIMIGO_SHOPEE_01",
+      requestCode: reqCode,
+      orderCode: s.orderCode,
+      productName: s.productName,
+      serialNumber: s.serialNumber,
+      purchaseDate: s.purchaseDate,
+      phone: s.phone,
+      returnMethod: s.returnMethod,
+      shippingCarrier: s.shippingCarrier,
+      trackingCode: s.trackingCode,
+      status: s.status,
+      verified: true,
+      verifiedBy: adminName,
+      verifiedAt: s.createdAt,
+      assignee: "Kỹ thuật A",
+      customerErrorDesc: s.customerErrorDesc,
+
+      // technical classification (để lọc/stat)
+      errorCategory: s.tech.cat,
+      errorSeverity: s.tech.sev,
+      errorCause: s.tech.cause,
+      techNote: s.tech.note,
+
+      createdBy: customerName,
+      createdAt: s.createdAt,
+      updatedAt: s.createdAt,
+      version: 0
+    };
+
+    db.warranties.push(w);
+
+    addLog(id, "CREATE", null, "CREATED", "Yêu cầu mới được tạo.", { by: customerName });
+    addLog(id, "VERIFY", null, null, "Đã kiểm tra mã đơn Shopee hợp lệ.", { verified: true });
+    addLog(id, "TRANSITION", "CREATED", w.status, `Chuyển trạng thái đến ${w.status}.`, null);
+    addLog(id, "TECH_CLASSIFY", null, null, "Kỹ thuật phân loại lỗi & ghi chú.", {
+      errorCategory: w.errorCategory,
+      errorSeverity: w.errorSeverity,
+      errorCause: w.errorCause
+    });
+  });
+
+  refreshAll();
+  alert(`Đã tạo dữ liệu mẫu thành công: ${db.warranties.length} yêu cầu.`);
+}
+
+function daysAgoISO(days){
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString();
+}
+
+/** =========================
+ *  Rendering
+ *  ========================= */
+function refreshAll(){
+  // refresh filter options
+  fillSelectOptions("c_filter_status", WarrantyStatus, "Tất cả");
+  fillSelectOptions("a_status", WarrantyStatus, "Tất cả");
+  fillSelectOptions("a_error_category", ErrorCategories, "Tất cả");
+  fillSelectOptions("a_product", uniqueProducts(), "Tất cả");
+
+  fillSelectOptions("d_status", WarrantyStatus, "Tất cả");
+  fillSelectOptions("d_error_category", ErrorCategories, "Tất cả");
+  fillSelectOptions("d_product", uniqueProducts(), "Tất cả");
+
+  fillSelectOptions("a_err_cat", ErrorCategories, null);
+
+  renderCustomerList();
+  renderAdminList();
+  renderDashboard();
+}
+
+function renderCustomerList(){
+  if(session.role !== "CUSTOMER") return;
+  const status = $("c_filter_status").value;
+  const from = $("c_filter_from").value;
+  const to = $("c_filter_to").value;
+
+  const rows = db.warranties
+    .filter(w=>w.createdBy === session.username)
+    .filter(w=>{
+      if(status && w.status !== status) return false;
+      if(from && new Date(w.createdAt) < new Date(from)) return false;
+      if(to){
+        const dTo = new Date(to); dTo.setHours(23,59,59,999);
+        if(new Date(w.createdAt) > dTo) return false;
+      }
+      return true;
+    })
+    .sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt))
+    .map(w=>`
+      <tr>
+        <td><b>${w.requestCode}</b></td>
+        <td>${w.orderCode}</td>
+        <td>${w.productName}</td>
+        <td>${fmtDate(w.createdAt)}</td>
+        <td>${makeBadge(w.status)}</td>
+        <td style="text-align:right;">
+          <button class="btn" onclick="openCustomerDetail('${w.id}')">Xem</button>
+        </td>
+      </tr>
+    `).join("");
+
+  $("c_table").innerHTML = rows || `<tr><td colspan="6" class="small">Chưa có dữ liệu.</td></tr>`;
+}
+
+function renderAdminList(){
+  if(session.role !== "ADMIN") return;
+
+  const q = $("a_q").value.trim().toLowerCase();
+  const phone = $("a_phone").value.trim();
+  const status = $("a_status").value;
+  const cat = $("a_error_category").value;
+  const product = $("a_product").value;
+
+  const from = $("a_from").value;
+  const to = $("a_to").value;
+  const pFrom = $("a_purchase_from").value;
+  const pTo = $("a_purchase_to").value;
+
+  const rows = db.warranties
+    .filter(w=>{
+      if(q){
+        const hit = w.orderCode.toLowerCase().includes(q) || w.requestCode.toLowerCase().includes(q);
+        if(!hit) return false;
+      }
+      if(phone && !w.phone.includes(phone)) return false;
+      if(status && w.status !== status) return false;
+      if(cat && w.errorCategory !== cat) return false;
+      if(product && w.productName !== product) return false;
+
+      if(from && new Date(w.createdAt) < new Date(from)) return false;
+      if(to){
+        const dTo = new Date(to); dTo.setHours(23,59,59,999);
+        if(new Date(w.createdAt) > dTo) return false;
+      }
+
+      if(pFrom && w.purchaseDate < pFrom) return false;
+      if(pTo && w.purchaseDate > pTo) return false;
+
+      return true;
+    })
+    .sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt))
+    .map(w=>`
+      <tr>
+        <td><b>${w.requestCode}</b></td>
+        <td>${w.orderCode}</td>
+        <td>${w.phone}</td>
+        <td>${w.productName}</td>
+        <td>${fmtDateOnly(w.purchaseDate)}</td>
+        <td>${makeBadge(w.status)}</td>
+        <td>${w.errorCategory ? `<span class="badge blue">${w.errorCategory}</span>` : `<span class="small">Chưa phân loại</span>`}</td>
+        <td style="text-align:right;">
+          <button class="btn" onclick="openAdminDetail('${w.id}')">Mở</button>
+        </td>
+      </tr>
+    `).join("");
+
+  $("a_table").innerHTML = rows || `<tr><td colspan="8" class="small">Không có dữ liệu theo bộ lọc.</td></tr>`;
+}
+
+function renderDashboard(){
+  if(session.role !== "ADMIN") return;
+
+  const filtered = dashboardFilter();
+  const total = filtered.length;
+  const done = filtered.filter(w=>w.status === "COMPLETED").length;
+  const inprogress = filtered.filter(w=> !["COMPLETED","REJECTED"].includes(w.status)).length;
+
+  // Avg days (ước tính): createdAt -> updatedAt
+  const avg = total ? Math.round(filtered.reduce((sum,w)=> sum + daysBetween(w.createdAt, w.updatedAt || w.createdAt), 0) / total) : 0;
+
+  $("kpi_total").textContent = total;
+  $("kpi_done").textContent = done;
+  $("kpi_inprogress").textContent = inprogress;
+  $("kpi_avg_days").textContent = avg;
+
+  // group stats (product + category)
+  const groups = new Map();
+  filtered.forEach(w=>{
+    const p = w.productName || "—";
+    const c = w.errorCategory || "Chưa phân loại";
+    const key = p + "||" + c;
+    if(!groups.has(key)){
+      groups.set(key, {product:p, category:c, count:0, days:0});
+    }
+    const g = groups.get(key);
+    g.count += 1;
+    g.days += daysBetween(w.createdAt, w.updatedAt || w.createdAt);
+  });
+
+  const list = Array.from(groups.values())
+    .sort((a,b)=> b.count - a.count);
+
+  const totalCount = filtered.length || 1;
+  $("d_table").innerHTML = list.map(g=>{
+    const pct = Math.round((g.count/totalCount)*1000)/10; // 1 decimal
+    const avgDays = g.count ? Math.round(g.days/g.count) : 0;
+    return `
+      <tr>
+        <td><b>${g.product}</b></td>
+        <td>${g.category}</td>
+        <td>${g.count}</td>
+        <td>${pct}</td>
+        <td>${avgDays}</td>
+      </tr>
+    `;
+  }).join("") || `<tr><td colspan="5" class="small">Không có dữ liệu theo bộ lọc.</td></tr>`;
+
+  // Charts
+  drawBarChart("chart_bar", groupByProduct(filtered));
+  drawPieChart("chart_pie", groupByCategory(filtered));
+}
+
+function dashboardFilter(){
+  const from = $("d_from").value;
+  const to = $("d_to").value;
+  const status = $("d_status").value;
+  const cat = $("d_error_category").value;
+  const product = $("d_product").value;
+  const order = $("d_order_code").value.trim().toLowerCase();
+  const pFrom = $("d_purchase_from").value;
+  const pTo = $("d_purchase_to").value;
+
+  return db.warranties.filter(w=>{
+    if(from && new Date(w.createdAt) < new Date(from)) return false;
+    if(to){
+      const dTo = new Date(to); dTo.setHours(23,59,59,999);
+      if(new Date(w.createdAt) > dTo) return false;
+    }
+    if(status && w.status !== status) return false;
+    if(cat && w.errorCategory !== cat) return false;
+    if(product && w.productName !== product) return false;
+    if(order && !w.orderCode.toLowerCase().includes(order)) return false;
+
+    if(pFrom && w.purchaseDate < pFrom) return false;
+    if(pTo && w.purchaseDate > pTo) return false;
+
+    return true;
+  });
+}
+
+function groupByProduct(items){
+  const m = new Map();
+  items.forEach(w=>{
+    const k = w.productName || "—";
+    m.set(k, (m.get(k)||0) + 1);
+  });
+  return Array.from(m.entries()).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,8);
+}
+function groupByCategory(items){
+  const m = new Map();
+  items.forEach(w=>{
+    const k = w.errorCategory || "Chưa phân loại";
+    m.set(k, (m.get(k)||0) + 1);
+  });
+  return Array.from(m.entries()).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,8);
+}
+
+/** =========================
+ *  Charts (Canvas, no lib)
+ *  ========================= */
+function drawBarChart(canvasId, data){
+  const c = $(canvasId);
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+
+  const padding = 36;
+  const w = c.width, h = c.height;
+  const max = Math.max(1, ...data.map(d=>d.value));
+  const barW = data.length ? (w - padding*2) / data.length : 0;
+
+  // axis
+  ctx.strokeStyle = "#E5E7EB";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(padding, h-padding);
+  ctx.lineTo(w-padding, h-padding);
+  ctx.stroke();
+
+  ctx.fillStyle = "#6B7280";
+  ctx.font = "12px " + getComputedStyle(document.body).fontFamily;
+
+  data.forEach((d,i)=>{
+    const x = padding + i*barW + barW*0.15;
+    const bw = barW*0.7;
+    const bh = ((h - padding*2) * d.value) / max;
+    const y = (h - padding) - bh;
+
+    // bar
+    ctx.fillStyle = "rgba(238,77,45,.75)";
+    ctx.fillRect(x, y, bw, bh);
+
+    // value
+    ctx.fillStyle = "#111827";
+    ctx.fillText(String(d.value), x + bw/2 - 4, y - 6);
+
+    // label (truncate)
+    const label = d.label.length > 12 ? d.label.slice(0,12) + "…" : d.label;
+    ctx.fillStyle = "#6B7280";
+    ctx.fillText(label, x, h - padding + 18);
+  });
+}
+
+function drawPieChart(canvasId, data){
+  const c = $(canvasId);
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+
+  const total = data.reduce((s,d)=>s+d.value,0) || 1;
+  const cx = 140, cy = c.height/2;
+  const r = 88;
+
+  let start = -Math.PI/2;
+  data.forEach((d, idx)=>{
+    const angle = (d.value/total) * Math.PI * 2;
+    const end = start + angle;
+
+    // pseudo palette
+    const alpha = 0.75;
+    const colors = [
+      `rgba(238,77,45,${alpha})`,
+      `rgba(59,130,246,${alpha})`,
+      `rgba(16,185,129,${alpha})`,
+      `rgba(245,158,11,${alpha})`,
+      `rgba(239,68,68,${alpha})`,
+      `rgba(139,92,246,${alpha})`,
+      `rgba(20,184,166,${alpha})`,
+      `rgba(100,116,139,${alpha})`,
+    ];
+    ctx.fillStyle = colors[idx % colors.length];
+
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,end);
+    ctx.closePath();
+    ctx.fill();
+
+    start = end;
+  });
+
+  // legend
+  ctx.font = "12px " + getComputedStyle(document.body).fontFamily;
+  let lx = 280, ly = 34;
+  data.forEach((d, idx)=>{
+    const colors = [
+      `rgba(238,77,45,.75)`,
+      `rgba(59,130,246,.75)`,
+      `rgba(16,185,129,.75)`,
+      `rgba(245,158,11,.75)`,
+      `rgba(239,68,68,.75)`,
+      `rgba(139,92,246,.75)`,
+      `rgba(20,184,166,.75)`,
+      `rgba(100,116,139,.75)`,
+    ];
+    ctx.fillStyle = colors[idx % colors.length];
+    ctx.fillRect(lx, ly-10, 12, 12);
+
+    ctx.fillStyle = "#111827";
+    const pct = Math.round((d.value/total)*1000)/10;
+    const label = d.label.length > 22 ? d.label.slice(0,22)+"…" : d.label;
+    ctx.fillText(`${label} (${pct}%)`, lx + 18, ly);
+
+    ly += 22;
+  });
+}
+
+/** =========================
+ *  Customer detail
+ *  ========================= */
+window.openCustomerDetail = function(id){
+  if(!requireRole("CUSTOMER")) return;
+  const w = db.warranties.find(x=>x.id===id);
+  if(!w) return;
+  currentCustomerWarrantyId = id;
+
+  $("c_detail_code").textContent = w.requestCode;
+  $("c_detail_info").innerHTML = `
+    <div class="small">Mã đơn: <b>${w.orderCode}</b></div>
+    <div class="small">Sản phẩm: <b>${w.productName}</b></div>
+    <div class="small">Serial: <b>${w.serialNumber || "—"}</b></div>
+    <div class="small">Ngày mua: <b>${fmtDateOnly(w.purchaseDate)}</b></div>
+    <div class="small">SĐT: <b>${w.phone}</b></div>
+    <div class="small">Hình thức gửi: <b>${w.returnMethod}</b></div>
+    <div class="small">Đơn vị VC: <b>${w.shippingCarrier || "—"}</b></div>
+    <div class="small">Mã vận đơn: <b>${w.trackingCode || "—"}</b></div>
+    <div class="divider"></div>
+    <div class="small">Mô tả lỗi (khách):</div>
+    <div style="margin-top:6px;">${escapeHtml(w.customerErrorDesc || "")}</div>
+  `;
+  $("c_detail_status").innerHTML = makeBadge(w.status);
+  $("c_detail_tracking").value = w.trackingCode || "";
+
+  const logs = getWarrantyLogs(id);
+  $("c_detail_timeline").innerHTML = logs.map(l=>`
+    <div class="titem">
+      <div class="dot"></div>
+      <div class="tbox">
+        <div><b>${l.action}</b> ${l.newStatus ? `• ${makeBadge(l.newStatus)}` : ""}</div>
+        ${l.note ? `<div style="margin-top:6px;">${escapeHtml(l.note)}</div>` : ""}
+        <div class="meta">
+          <span>${fmtDate(l.changedAt)}</span>
+          <span>•</span>
+          <span>${escapeHtml(l.changedBy)}</span>
+        </div>
+      </div>
+    </div>
+  `).join("") || `<div class="small">Chưa có lịch sử.</div>`;
+
+  $("nav-c-detail").classList.remove("hidden");
+  showPage("c-detail");
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/** =========================
+ *  Admin detail
+ *  ========================= */
+window.openAdminDetail = function(id){
+  if(!requireRole("ADMIN")) return;
+  const w = db.warranties.find(x=>x.id===id);
+  if(!w) return;
+
+  currentAdminWarrantyId = id;
+
+  $("a_detail_code").textContent = w.requestCode;
+
+  $("a_detail_info").innerHTML = `
+    <div class="small">Mã đơn: <b>${w.orderCode}</b></div>
+    <div class="small">Sản phẩm: <b>${w.productName}</b></div>
+    <div class="small">Serial: <b>${w.serialNumber || "—"}</b></div>
+    <div class="small">Ngày mua: <b>${fmtDateOnly(w.purchaseDate)}</b></div>
+    <div class="small">SĐT: <b>${w.phone}</b></div>
+    <div class="small">Hình thức gửi: <b>${w.returnMethod}</b></div>
+    <div class="small">Đơn vị VC: <b>${w.shippingCarrier || "—"}</b></div>
+    <div class="small">Mã vận đơn: <b>${w.trackingCode || "—"}</b></div>
+    <div class="divider"></div>
+    <div class="small">Mô tả lỗi (khách):</div>
+    <div style="margin-top:6px;">${escapeHtml(w.customerErrorDesc || "")}</div>
+  `;
+
+  $("a_detail_status").innerHTML = `
+    <div class="row" style="justify-content:space-between;align-items:center;">
+      <div>${makeBadge(w.status)}</div>
+      <div class="small">Verified: <b>${w.verified ? "Có" : "Chưa"}</b></div>
+    </div>
+  `;
+
+  // fill classify UI
+  $("a_err_cat").value = w.errorCategory || ErrorCategories[0];
+  $("a_err_sev").value = w.errorSeverity || "TRUNG_BÌNH";
+  $("a_err_cause").value = w.errorCause || "DO_SẢN_XUẤT";
+  $("a_tech_note").value = w.techNote || "";
+  $("a_internal_note").value = "";
+
+  // next statuses allowed
+  populateNextStatus(w.status);
+
+  const logs = getWarrantyLogs(id);
+  $("a_detail_timeline").innerHTML = logs.map(l=>`
+    <div class="titem">
+      <div class="dot"></div>
+      <div class="tbox">
+        <div><b>${l.action}</b> ${l.newStatus ? `• ${makeBadge(l.newStatus)}` : ""}</div>
+        ${l.note ? `<div style="margin-top:6px;">${escapeHtml(l.note)}</div>` : ""}
+        <div class="meta">
+          <span>${fmtDate(l.changedAt)}</span>
+          <span>•</span>
+          <span>${escapeHtml(l.changedBy)}</span>
+        </div>
+      </div>
+    </div>
+  `).join("") || `<div class="small">Chưa có lịch sử.</div>`;
+
+  $("nav-a-detail").classList.remove("hidden");
+  showPage("a-detail");
+}
+
+function populateNextStatus(current){
+  const allowed = AllowedTransitions[current] || [];
+  const sel = $("a_next_status");
+  sel.innerHTML = "";
+  if(!allowed.length){
+    const o = document.createElement("option");
+    o.value = "";
+    o.textContent = "Không có trạng thái tiếp theo";
+    sel.appendChild(o);
+    sel.disabled = true;
+    $("transition_hint").textContent = "Yêu cầu đã kết thúc hoặc không cho chuyển tiếp.";
+  }else{
+    allowed.forEach(s=>{
+      const o = document.createElement("option");
+      o.value = s;
+      o.textContent = s;
+      sel.appendChild(o);
+    });
+    sel.disabled = false;
+    $("transition_hint").textContent = `Chỉ cho phép: ${allowed.join(" → ")} (không nhảy sai logic).`;
+  }
+}
+
+/** =========================
+ *  Actions
+ *  ========================= */
+function login(){
+  const u = $("login-username").value.trim().toLowerCase();
+  if(!u){ alert("Vui lòng nhập tài khoản."); return; }
+  session.loggedIn = true;
+  session.username = u;
+  session.userId = u;
+  session.role = (u === "admin") ? "ADMIN" : "CUSTOMER";
+
+  $("view-login").classList.add("hidden");
+  $("view-app").classList.remove("hidden");
+
+  $("user-name").textContent = u;
+  $("user-role").textContent = session.role;
+  updateRoleUI();
+
+  // If customer doesn't have any record yet -> allow seed button
+  refreshAll();
+
+  if(session.role === "ADMIN"){
+    showPage("a-dashboard");
+  }else{
+    showPage("c-create");
+  }
+}
+
+function logout(){
+  session = {loggedIn:false, role:null, username:null, userId:null};
+  currentCustomerWarrantyId = null;
+  currentAdminWarrantyId = null;
+  $("view-app").classList.add("hidden");
+  $("view-login").classList.remove("hidden");
+  $("login-password").value = "";
+}
+
+function customerSubmit(){
+  if(!requireRole("CUSTOMER")) return;
+
+  const orderCode = $("c_order_code").value.trim();
+  const productName = $("c_product_name").value.trim();
+  const serial = $("c_serial").value.trim();
+  const purchaseDate = $("c_purchase_date").value;
+  const phone = $("c_phone").value.trim();
+  const errorDesc = $("c_error_desc").value.trim();
+  const returnMethod = $("c_return_method").value;
+  const carrier = $("c_carrier").value;
+  const tracking = $("c_tracking").value.trim();
+
+  // basic validation
+  if(!orderCode || !productName || !purchaseDate || !phone || !errorDesc){
+    alert("Vui lòng nhập đủ: Mã đơn, Tên sản phẩm, Ngày mua, SĐT, Mô tả lỗi.");
+    return;
+  }
+  if(returnMethod === "SHIP" && (!carrier || !tracking)){
+    alert("Nếu gửi Ship, vui lòng chọn Đơn vị vận chuyển và nhập Mã vận đơn.");
+    return;
+  }
+
+  const id = crypto.randomUUID();
+  const reqCode = genRequestCode();
+  const createdAt = nowISO();
+
+  const w = {
+    id,
+    shopId:"SIMIGO_SHOPEE_01",
+    requestCode:reqCode,
+    orderCode,
+    productName,
+    serialNumber: serial || "",
+    purchaseDate,
+    phone,
+    returnMethod,
+    shippingCarrier: carrier || "",
+    trackingCode: tracking || "",
+    status:"CREATED",
+    verified:false,
+    verifiedBy:null,
+    verifiedAt:null,
+    assignee:null,
+
+    customerErrorDesc: errorDesc,
+    errorCategory:null,
+    errorSeverity:null,
+    errorCause:null,
+    techNote:null,
+
+    createdBy: session.username,
+    createdAt,
+    updatedAt: createdAt,
+    version:0
+  };
+
+  db.warranties.push(w);
+  addLog(id, "CREATE", null, "CREATED", "Yêu cầu mới được tạo.", null);
+
+  // reset fields
+  ["c_order_code","c_product_name","c_serial","c_phone","c_error_desc","c_tracking"].forEach(k=>$(k).value="");
+  $("c_carrier").value = "";
+  // purchase date keep optional
+  refreshAll();
+  alert("Đã gửi yêu cầu bảo hành thành công.");
+  showPage("c-list");
+}
+
+function customerUpdateTracking(){
+  const id = currentCustomerWarrantyId;
+  if(!id) return;
+  const w = db.warranties.find(x=>x.id===id);
+  if(!w) return;
+  // only allowed before RECEIVED (demo policy)
+  const disallowed = ["RECEIVED","CHECKING","APPROVED","REJECTED","REPAIRING","DONE","SHIPPING_BACK","COMPLETED"];
+  if(disallowed.includes(w.status)){
+    alert("Không thể cập nhật vận đơn sau khi Shop đã nhận/đang xử lý.");
+    return;
+  }
+  const newTracking = $("c_detail_tracking").value.trim();
+  if(!newTracking){
+    alert("Vui lòng nhập mã vận đơn.");
+    return;
+  }
+  const old = w.trackingCode;
+  w.trackingCode = newTracking;
+  w.updatedAt = nowISO();
+  addLog(id, "UPDATE_TRACKING", null, null, `Khách cập nhật mã vận đơn: ${old || "—"} → ${newTracking}.`, null);
+  refreshAll();
+  openCustomerDetail(id);
+}
+
+function adminVerify(valid){
+  const id = currentAdminWarrantyId;
+  if(!id) return;
+  const w = db.warranties.find(x=>x.id===id);
+  if(!w) return;
+
+  w.verified = valid;
+  w.verifiedBy = session.username;
+  w.verifiedAt = nowISO();
+  w.updatedAt = w.verifiedAt;
+
+  addLog(id, "VERIFY", null, null, valid ? "Đã xác minh mã đơn Shopee hợp lệ." : "Từ chối: mã đơn không hợp lệ.", {verified: valid});
+
+  // If not valid -> could transition to REJECTED (policy)
+  if(!valid && w.status !== "REJECTED"){
+    const old = w.status;
+    w.status = "REJECTED";
+    w.updatedAt = nowISO();
+    addLog(id, "TRANSITION", old, "REJECTED", "Từ chối do xác minh không hợp lệ.", null);
+  }
+
+  refreshAll();
+  openAdminDetail(id);
+}
+
+function adminAddNote(){
+  const id = currentAdminWarrantyId;
+  if(!id) return;
+  const note = $("a_internal_note").value.trim();
+  if(!note){ alert("Vui lòng nhập ghi chú."); return; }
+  addLog(id, "ADD_NOTE", null, null, note, {scope:"INTERNAL"});
+  $("a_internal_note").value = "";
+  refreshAll();
+  openAdminDetail(id);
+}
+
+function adminTransition(){
+  const id = currentAdminWarrantyId;
+  if(!id) return;
+  const w = db.warranties.find(x=>x.id===id);
+  if(!w) return;
+
+  // apply tech classification first
+  const cat = $("a_err_cat").value;
+  const sev = $("a_err_sev").value;
+  const cause = $("a_err_cause").value;
+  const techNote = $("a_tech_note").value.trim();
+
+  w.errorCategory = cat;
+  w.errorSeverity = sev;
+  w.errorCause = cause;
+  w.techNote = techNote;
+  addLog(id, "TECH_CLASSIFY", null, null, "Kỹ thuật phân loại lỗi & ghi chú.", {errorCategory:cat, errorSeverity:sev, errorCause:cause});
+
+  // transition
+  const next = $("a_next_status").value;
+  const allowed = AllowedTransitions[w.status] || [];
+  if(!allowed.includes(next)){
+    alert("Trạng thái không hợp lệ theo luồng (bị chặn).");
+    populateNextStatus(w.status);
+    return;
+  }
+  const old = w.status;
+  w.status = next;
+  w.updatedAt = nowISO();
+  addLog(id, "TRANSITION", old, next, `Chuyển trạng thái: ${old} → ${next}.`, null);
+
+  refreshAll();
+  openAdminDetail(id);
+}
+
+function applyDashboardFilters(){
+  renderDashboard();
+}
+function resetDashboardFilters(){
+  ["d_from","d_to","d_order_code","d_purchase_from","d_purchase_to"].forEach(id=>$(id).value="");
+  $("d_status").value = "";
+  $("d_error_category").value = "";
+  $("d_product").value = "";
+  renderDashboard();
+}
+
+/** =========================
+ *  Wiring events
+ *  ========================= */
+function init(){
+  // login
+  $("login-fill-admin").onclick = ()=>{$("login-username").value="admin"; $("login-password").value="demo";};
+  $("login-fill-customer").onclick = ()=>{$("login-username").value="customer"; $("login-password").value="demo";};
+  $("btn-login").onclick = login;
+  $("btn-logout").onclick = logout;
+
+  // nav
+  document.querySelectorAll(".nav button[data-page]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const page = btn.dataset.page;
+      // guard by role
+      if(page.startsWith("a-") && session.role !== "ADMIN"){
+        alert("Bạn đang ở role CUSTOMER.");
+        return;
+      }
+      if(page.startsWith("c-") && session.role !== "CUSTOMER"){
+        alert("Bạn đang ở role ADMIN.");
+        return;
+      }
+      showPage(page);
+      if(page==="c-list") renderCustomerList();
+      if(page==="a-list") renderAdminList();
+      if(page==="a-dashboard") renderDashboard();
+    });
+  });
+
+  // seed
+  $("btn-seed").onclick = seedData;
+
+  // customer actions
+  $("btn-c-submit").onclick = customerSubmit;
+  $("btn-c-filter").onclick = renderCustomerList;
+  $("btn-c-back").onclick = ()=>{ $("nav-c-detail").classList.add("hidden"); showPage("c-list"); };
+  $("btn-c-update-tracking").onclick = customerUpdateTracking;
+  $("c_return_method").addEventListener("change", ()=>{
+    const rm = $("c_return_method").value;
+    const isShip = rm === "SHIP";
+    $("c_carrier").disabled = !isShip;
+    $("c_tracking").disabled = !isShip;
+  });
+
+  // admin actions
+  $("btn-a-search").onclick = renderAdminList;
+  $("btn-a-clear").onclick = ()=>{
+    ["a_q","a_phone","a_from","a_to","a_purchase_from","a_purchase_to"].forEach(id=>$(id).value="");
+    $("a_status").value=""; $("a_error_category").value=""; $("a_product").value="";
+    renderAdminList();
+  };
+  $("btn-a-back").onclick = ()=>{ $("nav-a-detail").classList.add("hidden"); showPage("a-list"); };
+
+  $("btn-verify-ok").onclick = ()=>adminVerify(true);
+  $("btn-verify-no").onclick = ()=>adminVerify(false);
+  $("btn-add-note").onclick = adminAddNote;
+  $("btn-transition").onclick = adminTransition;
+
+  // dashboard filters
+  $("btn-d-apply").onclick = applyDashboardFilters;
+  $("btn-d-reset").onclick = resetDashboardFilters;
+
+  // initial selects
+  fillSelectOptions("c_filter_status", WarrantyStatus, "Tất cả");
+  fillSelectOptions("a_status", WarrantyStatus, "Tất cả");
+  fillSelectOptions("a_error_category", ErrorCategories, "Tất cả");
+  fillSelectOptions("d_status", WarrantyStatus, "Tất cả");
+  fillSelectOptions("d_error_category", ErrorCategories, "Tất cả");
+  fillSelectOptions("a_err_cat", ErrorCategories, null);
+
+  // default disable shipping fields until ship selected
+  $("c_carrier").disabled = false;
+  $("c_tracking").disabled = false;
+}
+
+init();
+</script>
+</body>
+</html>
